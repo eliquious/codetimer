@@ -13,12 +13,19 @@ Example
 
     if __name__ == '__main__':
 
-        def append(n):
+        # define the function (any callable will do)
+        def append(n, mult=1):
             l = []
             for x in xrange(n):
-                l.append(x)
+                l.append(n*mult)
 
-        timer = CodeTimer(append, num=10, args=[1000]).run()
+        # setup CodeTimer with args and kwargs
+        # 'num' defines the number of executions
+        # then call 'run()'
+        # outputs: "<append - <Stats: count: 10; min: 16 ms; max: 21 ms; sum: 196 ms; mean: 20 ms; stdev: 55 us;>>"
+        print CodeTimer(append, args=[100000], num=10, kwargs={"mult":5}).run()
 
-        # <append - <Stats: count: 1000; min: 0.000004749s; max: 0.000010616s; sum: 0.005611607s; mean: 0.000005612s; stdev: 0.000000000s>>
-        print timer
+        # You can also specify the precision of the output
+        # outputs: "<append - <Stats: count: 10; min: 0.016s; max: 0.017s; sum: 0.161s: mean: 0.016s; stdev: 0.000s;>>"
+        print CodeTimer(append, args=[100000], num=10, precision=3).run()
+

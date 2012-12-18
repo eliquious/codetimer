@@ -3,9 +3,32 @@ from collections import namedtuple
 
 class Stats(object):
     """docstring for Stat"""
-    def __init__(self):
+    def __init__(self, precision=0):
         super(Stats, self).__init__()
-        self.count , self.sum, self.min, self.max, self.mean, self.m2, self.stdev = 0, 0, 2**32, 0, 0, 0, 0
+        self.count, self.sum, self.min, self.max, self.mean, self.m2, self.stdev = 0, 0, 2**32, 0, 0, 0, 0
+        self.precision = precision
+        self.format = "<Stats: count: {count}; min: {min:.{precision}f}s; max: {max:.{precision}f}s; sum: {sum:.{precision}f}s: mean: {mean:.{precision}f}s; stdev: {stdev:.{precision}f}s;>"
+
+    def _format(self):
+        if self.precision > 0:
+            return self.format.format(**self.__dict__)
+        else:
+            d = dict(self.__dict__)
+            format = "<Stats: count: {:.0f};".format(self.count)
+            for attr in ["min", "max", "sum", "mean", "stdev"]:
+                value = getattr(self, attr)
+                if value > 1:
+                    format += " {attr}: {0:.3f} s;".format(value, attr=attr)
+                elif value > 0.001:
+                    format += " {attr}: {0:.0f} ms;".format(value * 1000, attr=attr)
+                elif value > 0.000001:
+                    format += " {attr}: {0:.0f} us;".format(value * 1000000, attr=attr)
+                elif value > 0.000000001:
+                    format += " {attr}: {0:.0f} ns;".format(value * 1000000000, attr=attr)
+                else:
+                    format += " {attr}: {0:.3f} ns;".format(value * 1000000000, attr=attr)
+            format += ">"
+            return format
 
     def __iadd__(self, duration):
         self.count += 1
@@ -22,14 +45,12 @@ class Stats(object):
         return self
 
     def __str__(self):
-        return "<Stats: count: %i; min: %0.9fs; max: %0.9fs; sum: %0.9fs; mean: %0.9fs; stdev: %0.9fs>" % \
-            (self.count, self.min, self.max, self.sum, self.mean, self.stdev)
+        return self._format()
 
 class CodeTimer(object):
     """docstring for CodeTimer"""
-    def __init__(self, callable, num=1, args=[], kwargs={}, record=False):
+    def __init__(self, callable, num=1, args=[], kwargs={}, record=False, precision=0):
         super(CodeTimer, self).__init__()
-
         if not hasattr(callable, "__call__"):
             raise Exception("First argument must be callable.")
         if num < 1:
@@ -41,7 +62,14 @@ class CodeTimer(object):
         self.kwargs = kwargs
         self.record = record
         self.times = []
-        self.stats = Stats()
+        self.stats = Stats(precision)
+
+    def set_precision(self, value):
+        self.precision = value
+        self.stats.precision = value
+
+    def get_times(self):
+        return self.times
 
     def run(self):
         for i in xrange(self.number):
@@ -58,9 +86,12 @@ class CodeTimer(object):
 
 if __name__ == '__main__':
 
-    def append(l, n):
+    def append(n, mult=1):
+        l = []
         for x in xrange(n):
-            l.append(n)
+            l.append(n*mult)
 
-    print CodeTimer(append, args=[[], 5], num=10).run()
+    print CodeTimer(append, args=[100000], num=10, kwargs={"mult":5}).run()
+    print CodeTimer(append, args=[100000], num=10, precision=3).run()
+
     print "Done."
