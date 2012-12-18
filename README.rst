@@ -4,6 +4,8 @@ CodeTimer
 
 A small but versatile timer for python code snippets. Unlike Python's built-in ``timer`` module, ``codetimer`` allows you to time callables and setup different args/kwargs for each timer instance. CodeTimer also performs summary statistics on each code block.
 
+For Windows machines, the statistics use ``time.clock()``, all other machines use ``time.time()``. The statistics can be retrieved using the ``get_stats()`` function. CodeTimer also has a ``record`` option to pass the constructor which records all the times for each run. These times can begotten by using the ``get_times()`` method.
+
 Example
 -------
 

@@ -1,5 +1,10 @@
-from time import clock
 from collections import namedtuple
+import sys
+
+if "win" in sys.platform:
+    from time import clock
+else:
+    from time import time as clock
 
 class Stats(object):
     """docstring for Stat"""
@@ -70,6 +75,9 @@ class CodeTimer(object):
 
     def get_times(self):
         return self.times
+
+    def get_stats(self):
+        return self.stats
 
     def run(self):
         for i in xrange(self.number):
